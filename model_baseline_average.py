@@ -5,15 +5,15 @@ from fastai.vision.all import *
 class BaselineAverage(MNISTCompetitor):
     def __init__(self, loss_f):
         super().__init__()
-        self.averages = []
+        self.averages = torch.tensor([])
         self.loss_f = loss_f
 
     def get_name(self):
         return "BaselineAverage"
 
     def train_on(self, training_set):
-        self.averages = [digit_set.mean(axis=0) for digit_set in training_set]
-        #show_image(torch.tensor(self.averages).permute((1,0,2)).reshape((28,10*28)), figsize=(14,15))
+        self.averages = torch.stack([digit_set.mean(axis=0) for digit_set in training_set])
+        show_image(self.averages.permute((1,0,2)).reshape((28,10*28)), figsize=(14,15))
 
     def get_predictions(self, test_set):
         preds = []
@@ -21,6 +21,6 @@ class BaselineAverage(MNISTCompetitor):
             dig_preds = []
             for img in digit_set:
                 losses = torch.tensor([self.loss_f(img, self.averages[d]) for d in range(10)])
-                dig_preds.append(torch.argmin(losses))
+                dig_preds.append(int(torch.argmin(losses)))
             preds.append(dig_preds)
         return preds
